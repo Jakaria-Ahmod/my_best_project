@@ -170,7 +170,7 @@ const forgotPasswordController = async (req, res) => {
     process.env.RESET_PASSWORD_SECRET,
     { expiresIn: '1h' }
   );
-  const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+  const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
   const html = `
     <p>You requested a password reset. Click the link below to reset your password:</p>
