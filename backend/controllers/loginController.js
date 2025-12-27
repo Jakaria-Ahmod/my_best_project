@@ -2,6 +2,8 @@ const User = require('../models/user.models');
 const bcrypt = require('bcrypt');
 const validateEmail = require('../validate/validata');
 const { generateAccessToken, generateRefreshToken } = require('../jwt/jwt');
+const { sendEmail } = require('../utils/node');
+const jwt = require('jsonwebtoken');
 
 const registerContrller = async (req, res) => {
   try {
@@ -150,4 +152,63 @@ const refreshTokenController = (req, res) => {
     res.json({ accessToken });
   });
 };
-module.exports = { registerContrller, loginController, refreshTokenController };
+
+const forgotPasswordController = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.status(404).json({ message: 'User not found with this email' });
+  }
+
+  const resetToken = jwt.sign(
+    { id: user._id },
+    process.env.RESET_PASSWORD_SECRET,
+    { expiresIn: '1h' }
+  );
+  const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+
+  const html = `
+    <p>You requested a password reset. Click the link below to reset your password:</p>
+    <a href="${resetLink}">Reset Password</a>
+    <p>This link will expire in 1 hour.</p>
+  `;
+  await sendEmail(email, 'Password Reset Request', html);
+
+  res.status(200).json({
+    message: 'Password reset link has been sent to your email',
+  });
+};
+
+const resetPasswordController = async (req, res) => {
+  const { token } = req.params;
+  const { newPassword } = req.body;
+  if (!token || !newPassword) {
+    return res
+      .status(400)
+      .json({ message: 'Token and new password are required' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.RESET_PASSWORD_SECRET);
+    const userId = decoded.id;
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await User.findByIdAndUpdate(userId, { password: hashedPassword });
+
+    res.status(200).json({ message: 'Password has been reset successfully' });
+  } catch (err) {
+    return res.status(400).json({ message: 'Invalid or expired token' });
+  }
+};
+
+module.exports = {
+  registerContrller,
+  forgotPasswordController,
+  loginController,
+  refreshTokenController,
+  resetPasswordController,
+};

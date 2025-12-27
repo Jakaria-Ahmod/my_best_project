@@ -2,6 +2,8 @@ const {
   loginController,
   registerContrller,
   refreshTokenController,
+  forgotPasswordController,
+  resetPasswordController,
 } = require('../controllers/loginController');
 const {
   createProduct,
@@ -17,6 +19,8 @@ const router = require('express').Router();
 // Auth Routes
 router.post('/register', registerContrller);
 router.post('/login', loginController);
+router.post('/forget-password', forgotPasswordController);
+router.post('/reset-password/:token', resetPasswordController);
 router.post('/refresh-token', refreshTokenController);
 router.get('/', authMiddleware, welcome);
 // Product Routes
