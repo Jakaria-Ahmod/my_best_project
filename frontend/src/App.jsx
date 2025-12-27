@@ -6,6 +6,8 @@ import Registion from './components/Registion';
 import ProtectedRoute from './auth/Protect';
 import NotFound from './components/NotFound';
 import ProtectedLoginRoute from './auth/ProtectedLoginRoute';
+import ForgetPassword from './components/ForgetPassword';
+import ResetPassword from './components/ResetPassword';
 
 const router = createBrowserRouter([
   {
@@ -21,6 +23,22 @@ const router = createBrowserRouter([
     element: (
       <ProtectedLoginRoute>
         <Registion />
+      </ProtectedLoginRoute>
+    ),
+  },
+  {
+    path: '/forget-password',
+    element: (
+      <ProtectedLoginRoute>
+        <ForgetPassword />
+      </ProtectedLoginRoute>
+    ),
+  },
+  {
+    path: '/reset-password/:token',
+    element: (
+      <ProtectedLoginRoute>
+        <ResetPassword />
       </ProtectedLoginRoute>
     ),
   },
